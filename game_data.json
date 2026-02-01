@@ -1,0 +1,413 @@
+{
+  "characters": [
+    {
+      "id": "warrior",
+      "name": "レオン",
+      "title": "聖騎士",
+      "emoji": "⚔️",
+      "description": "王国の守護騎士。高い防御力と体力で味方を守る。力強い一撃が持ち味。",
+      "base_stats": {
+        "hp": 150,
+        "mp": 30,
+        "atk": 25,
+        "def": 20,
+        "spd": 10
+      },
+      "skills": [
+        {
+          "id": "heavy_slash",
+          "name": "ヘビースラッシュ",
+          "description": "強力な一撃を放つ",
+          "mp_cost": 8,
+          "damage_multiplier": 2.0,
+          "effect": "single_target"
+        },
+        {
+          "id": "iron_wall",
+          "name": "鉄壁の守り",
+          "description": "次のターンのダメージを半減する",
+          "mp_cost": 12,
+          "damage_multiplier": 0,
+          "effect": "defense_buff"
+        }
+      ],
+      "ultimate": {
+        "id": "divine_strike",
+        "name": "聖なる一閃",
+        "description": "神の加護を受けた渾身の一撃",
+        "mp_cost": 25,
+        "damage_multiplier": 4.5,
+        "effect": "ignore_def",
+        "animation": "画面が白く光る → 剣が黄金に輝く → 強烈な斬撃 → 敵に大ダメージ数値がスローで表示"
+      }
+    },
+    {
+      "id": "mage",
+      "name": "セレナ",
+      "title": "魔導師",
+      "emoji": "🔮",
+      "description": "古代魔法を操る賢者。強力な魔法攻撃で敵を殲滅する。体力は低いが破壊力は抜群。",
+      "base_stats": {
+        "hp": 80,
+        "mp": 80,
+        "atk": 35,
+        "def": 8,
+        "spd": 15
+      },
+      "skills": [
+        {
+          "id": "fireball",
+          "name": "ファイアボール",
+          "description": "炎の球を放つ強力な魔法",
+          "mp_cost": 15,
+          "damage_multiplier": 2.5,
+          "effect": "single_target"
+        },
+        {
+          "id": "burn_curse",
+          "name": "灼熱の呪い",
+          "description": "敵に継続ダメージを与える",
+          "mp_cost": 10,
+          "damage_multiplier": 1.2,
+          "effect": "burn"
+        }
+      ],
+      "ultimate": {
+        "id": "meteor_storm",
+        "name": "メテオストーム",
+        "description": "天から隕石の雨を降らせる究極魔法",
+        "mp_cost": 40,
+        "damage_multiplier": 6.0,
+        "effect": "ignore_def",
+        "animation": "空が赤く染まる → 魔法陣が現れる → 巨大隕石が複数降り注ぐ → 大爆発のエフェクト → 敵に超ダメージ"
+      }
+    },
+    {
+      "id": "rogue",
+      "name": "シャドウ",
+      "title": "暗殺者",
+      "emoji": "🗡️",
+      "description": "影を操る神速の戦士。素早い動きで敵を翻弄し、連続攻撃で確実に仕留める。",
+      "base_stats": {
+        "hp": 110,
+        "mp": 50,
+        "atk": 28,
+        "def": 12,
+        "spd": 30
+      },
+      "skills": [
+        {
+          "id": "triple_strike",
+          "name": "三連斬",
+          "description": "高速で3回斬りつける",
+          "mp_cost": 12,
+          "damage_multiplier": 1.3,
+          "effect": "multi_hit",
+          "hit_count": 3
+        },
+        {
+          "id": "shadow_step",
+          "name": "影渡り",
+          "description": "素早く動いて確実に攻撃する",
+          "mp_cost": 8,
+          "damage_multiplier": 1.8,
+          "effect": "guaranteed_hit"
+        }
+      ],
+      "ultimate": {
+        "id": "phantom_blade",
+        "name": "幻影刃舞",
+        "description": "無数の幻影が敵を切り刻む",
+        "mp_cost": 30,
+        "damage_multiplier": 2.0,
+        "effect": "multi_hit",
+        "hit_count": 7,
+        "animation": "キャラが消える → 無数の幻影が出現 → 高速で7回斬りつける → 最後に本体が現れて止めの一撃 → ダメージ数値が連続表示"
+      }
+    }
+  ],
+  "enemies": [
+    {
+      "id": "forest_goblin",
+      "name": "フォレストゴブリン",
+      "emoji": "👹",
+      "description": "森に棲む小型の魔物。素早く攻撃してくる。",
+      "base_stats": {
+        "hp": 50,
+        "mp": 20,
+        "atk": 15,
+        "def": 8,
+        "spd": 12
+      },
+      "ai_type": "random",
+      "skills": [
+        {
+          "id": "quick_stab",
+          "name": "素早い突き",
+          "mp_cost": 5,
+          "damage_multiplier": 1.5
+        }
+      ],
+      "exp_reward": 25,
+      "gold_reward": 15,
+      "location": "forest",
+      "is_boss": false,
+      "is_final_boss": false
+    },
+    {
+      "id": "desert_scorpion",
+      "name": "デザートスコーピオン",
+      "emoji": "🦂",
+      "description": "砂漠の巨大サソリ。毒を持つ危険な生物。",
+      "base_stats": {
+        "hp": 80,
+        "mp": 25,
+        "atk": 22,
+        "def": 15,
+        "spd": 10
+      },
+      "ai_type": "strong_attack",
+      "skills": [
+        {
+          "id": "poison_sting",
+          "name": "毒針",
+          "mp_cost": 8,
+          "damage_multiplier": 2.0
+        }
+      ],
+      "exp_reward": 40,
+      "gold_reward": 25,
+      "location": "desert",
+      "is_boss": false,
+      "is_final_boss": false
+    },
+    {
+      "id": "ice_golem",
+      "name": "アイスゴーレム",
+      "emoji": "⛄",
+      "description": "氷の山に現れる巨大な氷の魔物。",
+      "base_stats": {
+        "hp": 120,
+        "mp": 30,
+        "atk": 28,
+        "def": 25,
+        "spd": 5
+      },
+      "ai_type": "strong_attack",
+      "skills": [
+        {
+          "id": "ice_crush",
+          "name": "氷結砕",
+          "mp_cost": 10,
+          "damage_multiplier": 2.2
+        }
+      ],
+      "exp_reward": 60,
+      "gold_reward": 40,
+      "location": "ice_mountain",
+      "is_boss": false,
+      "is_final_boss": false
+    },
+    {
+      "id": "dark_knight",
+      "name": "ダークナイト",
+      "emoji": "🛡️",
+      "description": "闇に堕ちた元騎士。強力な攻撃と回復能力を持つ中間ボス。",
+      "base_stats": {
+        "hp": 200,
+        "mp": 60,
+        "atk": 35,
+        "def": 30,
+        "spd": 18
+      },
+      "ai_type": "heal_priority",
+      "skills": [
+        {
+          "id": "dark_slash",
+          "name": "闇の斬撃",
+          "mp_cost": 12,
+          "damage_multiplier": 2.5
+        }
+      ],
+      "heal_skill": {
+        "id": "shadow_heal",
+        "name": "影の癒し",
+        "mp_cost": 15,
+        "heal_amount": 50,
+        "trigger_hp_percent": 40
+      },
+      "exp_reward": 150,
+      "gold_reward": 100,
+      "location": "ruins",
+      "is_boss": true,
+      "is_final_boss": false
+    },
+    {
+      "id": "marbold",
+      "name": "大魔王マルボルド",
+      "emoji": "👿",
+      "description": "神の王冠を奪った悪の化身。圧倒的な力で世界を支配しようとする最終ボス。",
+      "base_stats": {
+        "hp": 400,
+        "mp": 100,
+        "atk": 50,
+        "def": 40,
+        "spd": 25
+      },
+      "ai_type": "heal_priority",
+      "skills": [
+        {
+          "id": "chaos_wave",
+          "name": "混沌の波動",
+          "mp_cost": 20,
+          "damage_multiplier": 3.0
+        },
+        {
+          "id": "dark_lightning",
+          "name": "闇の雷",
+          "mp_cost": 15,
+          "damage_multiplier": 2.5
+        }
+      ],
+      "heal_skill": {
+        "id": "demonic_regeneration",
+        "name": "魔王の再生",
+        "mp_cost": 25,
+        "heal_amount": 100,
+        "trigger_hp_percent": 30
+      },
+      "exp_reward": 500,
+      "gold_reward": 1000,
+      "location": "dark_castle",
+      "is_boss": true,
+      "is_final_boss": true
+    }
+  ],
+  "maps": [
+    {
+      "id": "kingdom",
+      "name": "王国の街",
+      "emoji": "🏰",
+      "description": "冒険の始まりの地。平和だった王国も今は混乱している。",
+      "enemy_ids": [],
+      "unlock_condition": "default",
+      "order": 1
+    },
+    {
+      "id": "forest",
+      "name": "迷いの森",
+      "emoji": "🌲",
+      "description": "深い森の中、魔物たちが潜んでいる。",
+      "enemy_ids": ["forest_goblin"],
+      "unlock_condition": "default",
+      "order": 2
+    },
+    {
+      "id": "ruins",
+      "name": "古代の廃墟",
+      "emoji": "🏛️",
+      "description": "かつて栄えた文明の跡。ダークナイトが守っている。",
+      "enemy_ids": ["dark_knight"],
+      "unlock_condition": "clear_forest",
+      "order": 3
+    },
+    {
+      "id": "desert",
+      "name": "灼熱の砂漠",
+      "emoji": "🏜️",
+      "description": "過酷な砂漠地帯。巨大サソリが徘徊する。",
+      "enemy_ids": ["desert_scorpion"],
+      "unlock_condition": "clear_ruins",
+      "order": 4
+    },
+    {
+      "id": "ice_mountain",
+      "name": "氷の山",
+      "emoji": "🏔️",
+      "description": "極寒の山岳地帯。氷のゴーレムが立ちはだかる。",
+      "enemy_ids": ["ice_golem"],
+      "unlock_condition": "clear_desert",
+      "order": 5
+    },
+    {
+      "id": "dark_castle",
+      "name": "暗黒の城",
+      "emoji": "🏯",
+      "description": "大魔王マルボルドの居城。王冠はここにある。",
+      "enemy_ids": ["marbold"],
+      "unlock_condition": "clear_ice_mountain",
+      "order": 6
+    }
+  ],
+  "damage_calculation": {
+    "formula": "基本ダメージ = (ATK × スキル倍率) - (DEF × 0.5)",
+    "random_coefficient": {
+      "min": 0.85,
+      "max": 1.15
+    },
+    "critical": {
+      "chance": 0.15,
+      "multiplier": 1.5
+    },
+    "minimum_damage": 1,
+    "special_effects": {
+      "ignore_def": "防御力を無視してダメージ計算",
+      "multi_hit": "hit_count回のダメージを与える（各ヒットは個別に計算）",
+      "burn": "3ターンの間、毎ターン最大HPの10%のダメージ",
+      "defense_buff": "次のターンに受けるダメージを50%軽減",
+      "guaranteed_hit": "必ず命中する（回避不可）"
+    }
+  },
+  "level_progression": {
+    "max_level": 10,
+    "stat_growth_per_level": {
+      "hp": 15,
+      "mp": 8,
+      "atk": 3,
+      "def": 2,
+      "spd": 1
+    },
+    "exp_table": [
+      {"level": 1, "required_exp": 0},
+      {"level": 2, "required_exp": 50},
+      {"level": 3, "required_exp": 120},
+      {"level": 4, "required_exp": 220},
+      {"level": 5, "required_exp": 350},
+      {"level": 6, "required_exp": 520},
+      {"level": 7, "required_exp": 730},
+      {"level": 8, "required_exp": 990},
+      {"level": 9, "required_exp": 1300},
+      {"level": 10, "required_exp": 1700}
+    ],
+    "design_notes": "レベル10を最大とし、大魔王の直前でレベル8～9になるように設計。各雑魚敵を2～3回倒すと次のレベルに到達。"
+  },
+  "items": [
+    {
+      "id": "health_potion",
+      "name": "回復薬",
+      "emoji": "💊",
+      "effect": "restore_hp",
+      "value": 50,
+      "cost": 30,
+      "description": "HPを50回復する"
+    },
+    {
+      "id": "mana_potion",
+      "name": "魔力の水",
+      "emoji": "💙",
+      "effect": "restore_mp",
+      "value": 30,
+      "cost": 40,
+      "description": "MPを30回復する"
+    },
+    {
+      "id": "elixir",
+      "name": "エリクサー",
+      "emoji": "✨",
+      "effect": "restore_all",
+      "value": 100,
+      "cost": 100,
+      "description": "HP・MPを全回復する"
+    }
+  ]
+}

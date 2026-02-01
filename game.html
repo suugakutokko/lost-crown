@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Lost Crown - 消えた王冠の旅</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a0033 0%, #0d001a 50%, #000000 100%);
+            color: white;
+            overflow: hidden;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* 星のパーティクル背景 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* 画面の基本スタイル */
+        .screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* タイトル画面 */
+        .title-screen {
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ff8800;
+            margin-bottom: 1rem;
+            animation: glow-pulse 2s infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { text-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700; }
+            50% { text-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700, 0 0 80px #ff8800; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #c8b8ff;
+            margin-bottom: 3rem;
+        }
+
+        /* グラスモーフィズムボタン */
+        .glass-button {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: button-pulse 2s infinite;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        @keyframes button-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
+        }
+
+        .glass-button:active {
+            transform: scale(0.95);
+        }
+
+        .glass-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* キャラ選択画面 */
+        .character-select-screen {
+            justify-content: flex-start;
+            padding-top: 40px;
+        }
+
+        .select-title {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px #ffd700;
+        }
+
+        .character-cards {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 2rem;
+        }
+
+        .character-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .character-card.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .character-card.dimmed {
+            opacity: 0.4;
+        }
+
+        .char-emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .char-name {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .char-title {
+            font-size: 1rem;
+            color: #c8b8ff;
+            margin-bottom: 15px;
+        }
+
+        .char-stats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stat {
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .char-skills {
+            font-size: 0.9rem;
+            color: #c8b8ff;
+            line-height: 1.5;
+        }
+
+        /* 戦闘画面 */
+        .battle-screen {
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .enemy-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .enemy-emoji {
+            font-size: 6rem;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .enemy-name {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .hp-bar-container {
+            width: 100%;
+            max-width: 300px;
+            height: 25px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .hp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff8800);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .hp-bar.player {
+            background: linear-gradient(90deg, #44ff44, #00aaff);
+        }
+
+        .mp-bar-container {
+            width: 100%;
+            max-width: 300px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            margin-top: 5px;
+        }
+
+        .mp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #aa44ff, #ff44aa);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .battle-log {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            min-height: 60px;
+            max-height: 100px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #c8b8ff;
+        }
+
+        .player-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .player-emoji {
+            font-size: 5rem;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .player-name {
+            font-size: 1.3rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.9rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.9);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* ダメージポップアップ */
+        .damage-popup {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px black, 0 0 20px black;
+            pointer-events: none;
+            animation: damage-rise 1s forwards;
+        }
+
+        .damage-popup.critical {
+            color: #ffd700;
+            font-size: 3rem;
+        }
+
+        @keyframes damage-rise {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px);
+            }
+        }
+
+        /* 攻撃アニメーション */
+        @keyframes attack-rush {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-100px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes blur-pulse {
+            0% { filter: blur(0); transform: scale(1); }
+            50% { filter: blur(5px); transform: scale(1.1); }
+            100% { filter: blur(0); transform: scale(1); }
+        }
+
+        @keyframes flash-white {
+            0% { background: transparent; }
+            50% { background: rgba(255, 255, 255, 0.8); }
+            100% { background: transparent; }
+        }
+
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* スキルメニュー */
+        .skill-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-top: 2px solid #ffd700;
+            z-index: 100;
+            display: none;
+        }
+
+        .skill-menu.active {
+            display: block;
+            animation: slide-up 0.3s;
+        }
+
+        @keyframes slide-up {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .skill-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .skill-option:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .skill-option.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .skill-name {
+            font-size: 1.1rem;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .skill-desc {
+            font-size: 0.9rem;
+            color: #c8b8ff;
+            margin-bottom: 5px;
+        }
+
+        .skill-cost {
+            font-size: 0.8rem;
+            color: #ff44aa;
+        }
+
+        /* 勝利/敗北画面 */
+        .result-screen {
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        .result-title.victory {
+            color: #ffd700;
+            animation: glow-pulse 1s infinite;
+        }
+
+        .result-title.defeat {
+            color: #ff4444;
+        }
+
+        .result-info {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        /* マップ画面 */
+        .map-screen {
+            justify-content: flex-start;
+            padding: 10px;
+        }
+
+        .status-bar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-label {
+            color: #c8b8ff;
+            font-size: 0.8rem;
+        }
+
+        .status-value {
+            color: #ffd700;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .map-title {
+            font-size: 2rem;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px #ffd700;
+        }
+
+        .area-list {
+            width: 100%;
+            max-width: 500px;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .area-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .area-card.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .area-card.available {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            animation: glow-pulse 2s infinite;
+        }
+
+        .area-card.cleared {
+            border-color: #4caf50;
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .area-emoji {
+            font-size: 3rem;
+        }
+
+        .area-info {
+            flex: 1;
+        }
+
+        .area-name {
+            font-size: 1.3rem;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .area-desc {
+            font-size: 0.9rem;
+            color: #c8b8ff;
+        }
+
+        .area-status {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .area-status.locked-text {
+            color: #888;
+        }
+
+        .area-status.cleared-text {
+            color: #4caf50;
+        }
+
+        /* エリア詳細ポップアップ */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        .popup-content {
+            background: rgba(20, 0, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .popup-title {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ffd700;
+        }
+
+        .popup-desc {
+            font-size: 1rem;
+            color: #c8b8ff;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .popup-enemy {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 星のパーティクル背景 -->
+    <div class="stars" id="stars"></div>
+
+    <!-- フラッシュオーバーレイ -->
+    <div class="flash-overlay" id="flashOverlay"></div>
+
+    <!-- タイトル画面 -->
+    <div class="screen active" id="titleScreen">
+        <!-- checkSaveData()で内容が設定される -->
+    </div>
+
+    <!-- キャラクター選択画面 -->
+    <div class="screen" id="characterSelectScreen">
+        <h2 class="select-title">英雄を選んで</h2>
+        <div class="character-cards" id="characterCards"></div>
+        <button class="glass-button" id="startAdventureBtn" onclick="goToMap()" disabled>出発</button>
+    </div>
+
+    <!-- マップ画面 -->
+    <div class="screen" id="mapScreen">
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-label">レベル</div>
+                <div class="status-value" id="statusLevel">1</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">HP</div>
+                <div class="status-value" id="statusHp">100/100</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">MP</div>
+                <div class="status-value" id="statusMp">50/50</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">ゴールド</div>
+                <div class="status-value" id="statusGold">0</div>
+            </div>
+        </div>
+        <h2 class="map-title">アルガレイアの地</h2>
+        <div class="area-list" id="areaList"></div>
+    </div>
+
+    <!-- エリア詳細ポップアップ -->
+    <div class="popup-overlay" id="areaPopup">
+        <div class="popup-content">
+            <div class="popup-title" id="popupTitle">エリア名</div>
+            <div class="popup-desc" id="popupDesc">エリアの説明</div>
+            <div class="popup-enemy" id="popupEnemy">🐉 ドラゴン</div>
+            <div class="popup-buttons">
+                <button class="glass-button" onclick="closeAreaPopup()">戻る</button>
+                <button class="glass-button" onclick="startBattleFromMap()">突進する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 戦闘画面 -->
+    <div class="screen" id="battleScreen">
+        <div class="enemy-area">
+            <div class="enemy-emoji" id="enemyEmoji">👹</div>
+            <div class="enemy-name" id="enemyName">敵の名前</div>
+            <div class="hp-bar-container">
+                <div class="hp-bar" id="enemyHpBar">
+                    <span id="enemyHpText">100/100</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="battle-log" id="battleLog">戦闘開始！</div>
+
+        <div class="player-area">
+            <div class="player-emoji" id="playerEmoji">⚔️</div>
+            <div class="player-name" id="playerName">プレイヤー</div>
+            <div class="hp-bar-container">
+                <div class="hp-bar player" id="playerHpBar">
+                    <span id="playerHpText">100/100</span>
+                </div>
+            </div>
+            <div class="mp-bar-container">
+                <div class="mp-bar" id="playerMpBar">
+                    <span id="playerMpText">50/50</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn" onclick="playerAttack()">⚔️ 攻撃</button>
+            <button class="action-btn" onclick="openSkillMenu()">✨ スキル</button>
+            <button class="action-btn" onclick="useUltimate()">💥 必殺技</button>
+            <button class="action-btn" onclick="openItemMenu()">🧪 アイテム</button>
+            <button class="action-btn" onclick="retreat()">🏃 撤退</button>
+        </div>
+    </div>
+
+    <!-- スキルメニュー -->
+    <div class="skill-menu" id="skillMenu">
+        <h3 style="color: #ffd700; margin-bottom: 15px;">スキルを選択</h3>
+        <div id="skillOptions"></div>
+        <button class="glass-button" style="width: 100%; margin-top: 10px;" onclick="closeSkillMenu()">キャンセル</button>
+    </div>
+
+    <!-- アイテムメニュー -->
+    <div class="skill-menu" id="itemMenu">
+        <h3 style="color: #ffd700; margin-bottom: 15px;">アイテムを選択</h3>
+        <div id="itemOptions"></div>
+        <button class="glass-button" style="width: 100%; margin-top: 10px;" onclick="closeItemMenu()">キャンセル</button>
+    </div>
+
+    <!-- 勝利/敗北画面 -->
+    <div class="screen" id="resultScreen">
+        <h2 class="result-title" id="resultTitle">勝利！</h2>
+        <div class="result-info" id="resultInfo"></div>
+        <div class="result-buttons">
+            <button class="glass-button" onclick="returnToTitle()">タイトルへ</button>
+            <button class="glass-button" onclick="playAgain()">もう一度</button>
+        </div>
+    </div>
+
+    <!-- エンディング画面 -->
+    <div class="screen" id="endingScreen">
+        <h2 class="result-title victory" style="font-size: 2.5rem; margin-bottom: 3rem;">
+            おめでとう！
+        </h2>
+        <div class="result-info" style="font-size: 1.1rem; line-height: 2;">
+            <div style="margin-bottom: 20px;">👑 王冠を取り戻した！ 👑</div>
+            <div style="margin-bottom: 20px;">アルガレイアに平和が戻った。</div>
+            <div style="margin-top: 30px; color: #c8b8ff;">
+                <div>最終レベル: Lv.${playerLevel}</div>
+                <div>獲得ゴールド: ${playerGold}</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="glass-button" onclick="returnToTitle()">タイトルに戻る</button>
+        </div>
+    </div>
+
+    <script>
+        // ゲームデータ
+        const gameData = {
+            "characters": [
+                {
+                    "id": "warrior",
+                    "name": "レオン",
+                    "title": "聖騎士",
+                    "emoji": "⚔️",
+                    "description": "王国の守護騎士。高い防御力と体力で味方を守る。力強い一撃が持ち味。",
+                    "base_stats": { "hp": 150, "mp": 30, "atk": 25, "def": 20, "spd": 10 },
+                    "skills": [
+                        {
+                            "id": "heavy_slash",
+                            "name": "ヘビースラッシュ",
+                            "description": "強力な一撃を放つ",
+                            "mp_cost": 8,
+                            "damage_multiplier": 2.0,
+                            "effect": "single_target"
+                        },
+                        {
+                            "id": "iron_wall",
+                            "name": "鉄壁の守り",
+                            "description": "次のターンのダメージを半減する",
+                            "mp_cost": 12,
+                            "damage_multiplier": 0,
+                            "effect": "defense_buff"
+                        }
+                    ],
+                    "ultimate": {
+                        "id": "divine_strike",
+                        "name": "聖なる一閃",
+                        "description": "神の加護を受けた渾身の一撃",
+                        "mp_cost": 25,
+                        "damage_multiplier": 4.5,
+                        "effect": "ignore_def"
+                    }
+                },
+                {
+                    "id": "mage",
+                    "name": "セレナ",
+                    "title": "魔導師",
+                    "emoji": "🔮",
+                    "description": "古代魔法を操る賢者。強力な魔法攻撃で敵を殲滅する。",
+                    "base_stats": { "hp": 80, "mp": 80, "atk": 35, "def": 8, "spd": 15 },
+                    "skills": [
+                        {
+                            "id": "fireball",
+                            "name": "ファイアボール",
+                            "description": "炎の球を放つ強力な魔法",
+                            "mp_cost": 15,
+                            "damage_multiplier": 2.5,
+                            "effect": "single_target"
+                        },
+                        {
+                            "id": "burn_curse",
+                            "name": "灼熱の呪い",
+                            "description": "敵に継続ダメージを与える",
+                            "mp_cost": 10,
+                            "damage_multiplier": 1.2,
+                            "effect": "burn"
+                        }
+                    ],
+                    "ultimate": {
+                        "id": "meteor_storm",
+                        "name": "メテオストーム",
+                        "description": "天から隕石の雨を降らせる究極魔法",
+                        "mp_cost": 40,
+                        "damage_multiplier": 6.0,
+                        "effect": "ignore_def"
+                    }
+                },
+                {
+                    "id": "rogue",
+                    "name": "シャドウ",
+                    "title": "暗殺者",
+                    "emoji": "🗡️",
+                    "description": "影を操る神速の戦士。素早い動きで敵を翻弄し、連続攻撃で確実に仕留める。",
+                    "base_stats": { "hp": 110, "mp": 50, "atk": 28, "def": 12, "spd": 30 },
+                    "skills": [
+                        {
+                            "id": "triple_strike",
+                            "name": "三連斬",
+                            "description": "高速で3回斬りつける",
+                            "mp_cost": 12,
+                            "damage_multiplier": 1.3,
+                            "effect": "multi_hit",
+                            "hit_count": 3
+                        },
+                        {
+                            "id": "shadow_step",
+                            "name": "影渡り",
+                            "description": "素早く動いて確実に攻撃する",
+                            "mp_cost": 8,
+                            "damage_multiplier": 1.8,
+                            "effect": "guaranteed_hit"
+                        }
+                    ],
+                    "ultimate": {
+                        "id": "phantom_blade",
+                        "name": "幻影刃舞",
+                        "description": "無数の幻影が敵を切り刻む",
+                        "mp_cost": 30,
+                        "damage_multiplier": 2.0,
+                        "effect": "multi_hit",
+                        "hit_count": 7
+                    }
+                }
+            ],
+            "enemies": [
+                {
+                    "id": "forest_goblin",
+                    "name": "フォレストゴブリン",
+                    "emoji": "👹",
+                    "description": "森に棲む小型の魔物。素早く攻撃してくる。",
+                    "base_stats": { "hp": 50, "mp": 20, "atk": 15, "def": 8, "spd": 12 },
+                    "ai_type": "random",
+                    "skills": [
+                        { "id": "quick_stab", "name": "素早い突き", "mp_cost": 5, "damage_multiplier": 1.5 }
+                    ],
+                    "exp_reward": 25,
+                    "gold_reward": 15,
+                    "is_boss": false,
+                    "is_final_boss": false
+                },
+                {
+                    "id": "desert_scorpion",
+                    "name": "デザートスコーピオン",
+                    "emoji": "🦂",
+                    "description": "砂漠の巨大サソリ。毒を持つ危険な生物。",
+                    "base_stats": { "hp": 80, "mp": 25, "atk": 22, "def": 15, "spd": 10 },
+                    "ai_type": "strong_attack",
+                    "skills": [
+                        { "id": "poison_sting", "name": "毒針", "mp_cost": 8, "damage_multiplier": 2.0 }
+                    ],
+                    "exp_reward": 40,
+                    "gold_reward": 25,
+                    "is_boss": false,
+                    "is_final_boss": false
+                },
+                {
+                    "id": "ice_golem",
+                    "name": "アイスゴーレム",
+                    "emoji": "⛄",
+                    "description": "氷の山に現れる巨大な氷の魔物。",
+                    "base_stats": { "hp": 120, "mp": 30, "atk": 28, "def": 25, "spd": 5 },
+                    "ai_type": "strong_attack",
+                    "skills": [
+                        { "id": "ice_crush", "name": "氷結砕", "mp_cost": 10, "damage_multiplier": 2.2 }
+                    ],
+                    "exp_reward": 60,
+                    "gold_reward": 40,
+                    "is_boss": false,
+                    "is_final_boss": false
+                },
+                {
+                    "id": "dark_knight",
+                    "name": "ダークナイト",
+                    "emoji": "🛡️",
+                    "description": "闇に堕ちた元騎士。強力な攻撃と回復能力を持つ中間ボス。",
+                    "base_stats": { "hp": 200, "mp": 60, "atk": 35, "def": 30, "spd": 18 },
+                    "ai_type": "heal_priority",
+                    "skills": [
+                        { "id": "dark_slash", "name": "闇の斬撃", "mp_cost": 12, "damage_multiplier": 2.5 }
+                    ],
+                    "heal_skill": {
+                        "id": "shadow_heal",
+                        "name": "影の癒し",
+                        "mp_cost": 15,
+                        "heal_amount": 50,
+                        "trigger_hp_percent": 40
+                    },
+                    "exp_reward": 150,
+                    "gold_reward": 100,
+                    "is_boss": true,
+                    "is_final_boss": false
+                },
+                {
+                    "id": "marbold",
+                    "name": "大魔王マルボルド",
+                    "emoji": "👿",
+                    "description": "神の王冠を奪った悪の化身。圧倒的な力で世界を支配しようとする最終ボス。",
+                    "base_stats": { "hp": 400, "mp": 100, "atk": 50, "def": 40, "spd": 25 },
+                    "ai_type": "heal_priority",
+                    "skills": [
+                        { "id": "chaos_wave", "name": "混沌の波動", "mp_cost": 20, "damage_multiplier": 3.0 },
+                        { "id": "dark_lightning", "name": "闇の雷", "mp_cost": 15, "damage_multiplier": 2.5 }
+                    ],
+                    "heal_skill": {
+                        "id": "demonic_regeneration",
+                        "name": "魔王の再生",
+                        "mp_cost": 25,
+                        "heal_amount": 100,
+                        "trigger_hp_percent": 30
+                    },
+                    "exp_reward": 500,
+                    "gold_reward": 1000,
+                    "is_boss": true,
+                    "is_final_boss": true
+                }
+            ],
+            "items": [
+                {
+                    "id": "health_potion",
+                    "name": "回復薬",
+                    "emoji": "💊",
+                    "effect": "restore_hp",
+                    "value": 50,
+                    "cost": 30,
+                    "description": "HPを50回復する"
+                }
+            ],
+            "level_progression": {
+                "max_level": 10,
+                "stat_growth_per_level": {
+                    "hp": 15,
+                    "mp": 8,
+                    "atk": 3,
+                    "def": 2,
+                    "spd": 1
+                },
+                "exp_table": [
+                    { "level": 1, "required_exp": 0 },
+                    { "level": 2, "required_exp": 50 },
+                    { "level": 3, "required_exp": 120 },
+                    { "level": 4, "required_exp": 220 },
+                    { "level": 5, "required_exp": 350 },
+                    { "level": 6, "required_exp": 520 },
+                    { "level": 7, "required_exp": 730 },
+                    { "level": 8, "required_exp": 990 },
+                    { "level": 9, "required_exp": 1300 },
+                    { "level": 10, "required_exp": 1700 }
+                ]
+            }
+        };
+
+        // ゲーム状態
+        let selectedCharacter = null;
+        let playerStats = null;
+        let currentEnemy = null;
+        let enemyStats = null;
+        let ultimateGauge = 0;
+        let playerDefenseBuff = false;
+        let enemyBurnTurns = 0;
+        let playerInventory = { health_potion: 3 };
+        let playerLevel = 1;
+        let playerExp = 0;
+        let playerGold = 0;
+        let currentEnemyIndex = 0;
+        let clearedEnemies = []; // 倒した敵のインデックスリスト
+        let selectedAreaIndex = null;
+
+        // 初期化
+        function init() {
+            createStars();
+            loadCharacterCards();
+            checkSaveData();
+        }
+
+        // セーブデータの確認
+        function checkSaveData() {
+            const saveData = localStorage.getItem('lc_save');
+            const titleButtons = document.querySelector('#titleScreen');
+
+            if (saveData) {
+                // セーブデータがある場合は2つのボタンを表示
+                titleButtons.innerHTML = `
+                    <h1 class="game-title">LOST CROWN</h1>
+                    <p class="subtitle">消えた王冠の旅</p>
+                    <button class="glass-button" onclick="loadGame()" style="margin-bottom: 15px;">続けて遊ぶ</button>
+                    <button class="glass-button" onclick="newGame()">新規開始</button>
+                `;
+            } else {
+                // セーブデータがない場合は1つのボタンのみ
+                titleButtons.innerHTML = `
+                    <h1 class="game-title">LOST CROWN</h1>
+                    <p class="subtitle">消えた王冠の旅</p>
+                    <button class="glass-button" onclick="newGame()">冒険へ</button>
+                `;
+            }
+        }
+
+        // 新規ゲーム開始
+        function newGame() {
+            localStorage.removeItem('lc_save');
+            selectedCharacter = null;
+            playerLevel = 1;
+            playerExp = 0;
+            playerGold = 0;
+            clearedEnemies = [];
+            switchScreen('characterSelectScreen');
+        }
+
+        // ゲームをロード
+        function loadGame() {
+            const saveData = localStorage.getItem('lc_save');
+            if (!saveData) return;
+
+            try {
+                const data = JSON.parse(saveData);
+
+                // キャラクター選択
+                selectedCharacter = gameData.characters.find(c => c.id === data.characterId);
+                if (!selectedCharacter) return;
+
+                // データ復元
+                playerLevel = data.level;
+                playerExp = data.exp;
+                playerGold = data.gold;
+                clearedEnemies = data.clearedEnemies || [];
+
+                // プレイヤーステータス復元
+                playerStats = {
+                    hp: data.stats.hp,
+                    mp: data.stats.mp,
+                    atk: data.stats.atk,
+                    def: data.stats.def,
+                    spd: data.stats.spd,
+                    currentHp: data.stats.currentHp,
+                    currentMp: data.stats.currentMp
+                };
+
+                // マップ画面へ
+                updateMapScreen();
+                switchScreen('mapScreen');
+            } catch (e) {
+                console.error('セーブデータの読み込みに失敗しました', e);
+                newGame();
+            }
+        }
+
+        // ゲームを保存
+        function saveGame() {
+            if (!selectedCharacter) return;
+
+            const saveData = {
+                characterId: selectedCharacter.id,
+                level: playerLevel,
+                exp: playerExp,
+                gold: playerGold,
+                clearedEnemies: clearedEnemies,
+                stats: {
+                    hp: playerStats.hp,
+                    mp: playerStats.mp,
+                    atk: playerStats.atk,
+                    def: playerStats.def,
+                    spd: playerStats.spd,
+                    currentHp: playerStats.currentHp,
+                    currentMp: playerStats.currentMp
+                }
+            };
+
+            localStorage.setItem('lc_save', JSON.stringify(saveData));
+        }
+
+        // 星のパーティクル生成
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 画面切り替え
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+
+        // マップ画面へ遷移
+        function goToMap() {
+            if (!selectedCharacter) return;
+
+            // 初回のみ初期化
+            if (playerLevel === 1 && playerExp === 0 && playerGold === 0) {
+                playerLevel = 1;
+                playerExp = 0;
+                playerGold = 0;
+                clearedEnemies = [];
+
+                // プレイヤーステータス初期化
+                const char = selectedCharacter;
+                playerStats = {
+                    hp: char.base_stats.hp,
+                    mp: char.base_stats.mp,
+                    atk: char.base_stats.atk,
+                    def: char.base_stats.def,
+                    spd: char.base_stats.spd,
+                    currentHp: char.base_stats.hp,
+                    currentMp: char.base_stats.mp
+                };
+            }
+
+            updateMapScreen();
+            switchScreen('mapScreen');
+        }
+
+        // マップ画面の更新
+        function updateMapScreen() {
+            // ステータスバー更新
+            document.getElementById('statusLevel').textContent = playerLevel;
+            document.getElementById('statusHp').textContent = `${playerStats.currentHp}/${playerStats.hp}`;
+            document.getElementById('statusMp').textContent = `${playerStats.currentMp}/${playerStats.mp}`;
+            document.getElementById('statusGold').textContent = playerGold;
+
+            // エリアリスト更新
+            const areaList = document.getElementById('areaList');
+            areaList.innerHTML = '';
+
+            gameData.enemies.forEach((enemy, index) => {
+                const isCleared = clearedEnemies.includes(index);
+                const isAvailable = index === 0 || clearedEnemies.includes(index - 1);
+                const isLocked = !isAvailable && !isCleared;
+
+                const card = document.createElement('div');
+                card.className = 'area-card';
+
+                if (isCleared) {
+                    card.classList.add('cleared');
+                } else if (isAvailable) {
+                    card.classList.add('available');
+                } else {
+                    card.classList.add('locked');
+                }
+
+                let statusText = '';
+                if (isCleared) {
+                    statusText = '<div class="area-status cleared-text">✓ 突破済み</div>';
+                } else if (isLocked) {
+                    statusText = '<div class="area-status locked-text">🔒 ロック中</div>';
+                }
+
+                card.innerHTML = `
+                    <div class="area-emoji">${enemy.emoji}</div>
+                    <div class="area-info">
+                        <div class="area-name">${enemy.name}</div>
+                        <div class="area-desc">${enemy.description}</div>
+                        ${statusText}
+                    </div>
+                `;
+
+                if (isAvailable && !isCleared) {
+                    card.onclick = () => openAreaPopup(index);
+                }
+
+                areaList.appendChild(card);
+            });
+        }
+
+        // エリア詳細ポップアップを開く
+        function openAreaPopup(index) {
+            selectedAreaIndex = index;
+            const enemy = gameData.enemies[index];
+
+            document.getElementById('popupTitle').textContent = enemy.name;
+            document.getElementById('popupDesc').textContent = enemy.description;
+            document.getElementById('popupEnemy').textContent = `${enemy.emoji} ${enemy.name}`;
+
+            document.getElementById('areaPopup').classList.add('active');
+        }
+
+        // エリア詳細ポップアップを閉じる
+        function closeAreaPopup() {
+            document.getElementById('areaPopup').classList.remove('active');
+            selectedAreaIndex = null;
+        }
+
+        // マップから戦闘開始
+        function startBattleFromMap() {
+            if (selectedAreaIndex === null) return;
+
+            closeAreaPopup();
+            currentEnemyIndex = selectedAreaIndex;
+            startBattle(false);
+        }
+
+        // キャラクターカード読み込み
+        function loadCharacterCards() {
+            const container = document.getElementById('characterCards');
+            container.innerHTML = '';
+
+            gameData.characters.forEach(char => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.innerHTML = `
+                    <div class="char-emoji">${char.emoji}</div>
+                    <div class="char-name">${char.name}</div>
+                    <div class="char-title">${char.title}</div>
+                    <div class="char-stats">
+                        <div class="stat"><div class="stat-value">${char.base_stats.hp}</div>HP</div>
+                        <div class="stat"><div class="stat-value">${char.base_stats.mp}</div>MP</div>
+                        <div class="stat"><div class="stat-value">${char.base_stats.atk}</div>ATK</div>
+                        <div class="stat"><div class="stat-value">${char.base_stats.def}</div>DEF</div>
+                        <div class="stat"><div class="stat-value">${char.base_stats.spd}</div>SPD</div>
+                    </div>
+                    <div class="char-skills">
+                        ${char.skills.map(s => s.name).join(' / ')}
+                    </div>
+                `;
+                card.onclick = () => selectCharacter(char, card);
+                container.appendChild(card);
+            });
+        }
+
+        // キャラクター選択
+        function selectCharacter(char, cardElement) {
+            selectedCharacter = char;
+            document.querySelectorAll('.character-card').forEach(c => {
+                c.classList.remove('selected');
+                c.classList.add('dimmed');
+            });
+            cardElement.classList.add('selected');
+            cardElement.classList.remove('dimmed');
+            document.getElementById('startAdventureBtn').disabled = false;
+        }
+
+        // 戦闘開始
+        function startBattle(resetProgress = false) {
+            if (!selectedCharacter) return;
+
+            // 初回のみレベル・経験値・ゴールドをリセット
+            if (resetProgress) {
+                playerLevel = 1;
+                playerExp = 0;
+                playerGold = 0;
+                currentEnemyIndex = 0;
+
+                // プレイヤー初期化（レベルに応じてステータス強化）
+                const levelBonus = playerLevel - 1;
+                playerStats = {
+                    hp: selectedCharacter.base_stats.hp + (gameData.level_progression.stat_growth_per_level.hp * levelBonus),
+                    mp: selectedCharacter.base_stats.mp + (gameData.level_progression.stat_growth_per_level.mp * levelBonus),
+                    atk: selectedCharacter.base_stats.atk + (gameData.level_progression.stat_growth_per_level.atk * levelBonus),
+                    def: selectedCharacter.base_stats.def + (gameData.level_progression.stat_growth_per_level.def * levelBonus),
+                    spd: selectedCharacter.base_stats.spd + (gameData.level_progression.stat_growth_per_level.spd * levelBonus)
+                };
+                playerStats.currentHp = playerStats.hp;
+                playerStats.currentMp = playerStats.mp;
+            }
+            // マップから来た場合は現在のHP/MPを維持
+
+            // 敵初期化
+            currentEnemy = gameData.enemies[currentEnemyIndex];
+            enemyStats = {
+                ...currentEnemy.base_stats,
+                currentHp: currentEnemy.base_stats.hp,
+                currentMp: currentEnemy.base_stats.mp
+            };
+
+            ultimateGauge = 0;
+            playerDefenseBuff = false;
+            enemyBurnTurns = 0;
+
+            // UI更新
+            document.getElementById('playerEmoji').textContent = selectedCharacter.emoji;
+            document.getElementById('playerName').textContent = `${selectedCharacter.name} Lv.${playerLevel}`;
+            document.getElementById('enemyEmoji').textContent = currentEnemy.emoji;
+            document.getElementById('enemyName').textContent = currentEnemy.name;
+
+            updateBattleUI();
+
+            // ボス登場演出
+            if (currentEnemy.is_final_boss) {
+                playFlash();
+                addLog(`大魔王 ${currentEnemy.name} が現れた！`);
+            } else if (currentEnemy.is_boss) {
+                playFlash();
+                addLog(`ボス ${currentEnemy.name} が現れた！`);
+            } else {
+                addLog(`${currentEnemy.name}が現れた！`);
+            }
+
+            switchScreen('battleScreen');
+        }
+
+        // 戦闘UI更新
+        function updateBattleUI() {
+            // プレイヤーHP
+            const playerHpPercent = (playerStats.currentHp / playerStats.hp) * 100;
+            document.getElementById('playerHpBar').style.width = playerHpPercent + '%';
+            document.getElementById('playerHpText').textContent = `${playerStats.currentHp}/${playerStats.hp}`;
+
+            // プレイヤーMP
+            const playerMpPercent = (playerStats.currentMp / playerStats.mp) * 100;
+            document.getElementById('playerMpBar').style.width = playerMpPercent + '%';
+            document.getElementById('playerMpText').textContent = `${playerStats.currentMp}/${playerStats.mp}`;
+
+            // 敵HP
+            const enemyHpPercent = (enemyStats.currentHp / enemyStats.hp) * 100;
+            document.getElementById('enemyHpBar').style.width = enemyHpPercent + '%';
+            document.getElementById('enemyHpText').textContent = `${enemyStats.currentHp}/${enemyStats.hp}`;
+        }
+
+        // ログ追加
+        function addLog(text) {
+            const log = document.getElementById('battleLog');
+            log.textContent = text;
+        }
+
+        // ダメージ計算
+        function calculateDamage(attacker, defender, multiplier, ignoreDefense = false) {
+            let baseDamage = (attacker.atk * multiplier) - (ignoreDefense ? 0 : defender.def * 0.5);
+
+            // ランダム係数
+            const randomFactor = 0.85 + Math.random() * 0.3;
+            baseDamage *= randomFactor;
+
+            // クリティカル
+            const isCritical = Math.random() < 0.15;
+            if (isCritical) {
+                baseDamage *= 1.5;
+            }
+
+            baseDamage = Math.max(1, Math.floor(baseDamage));
+
+            return { damage: baseDamage, isCritical };
+        }
+
+        // ダメージポップアップ
+        function showDamagePopup(damage, isCritical, isEnemy = true) {
+            const popup = document.createElement('div');
+            popup.className = 'damage-popup' + (isCritical ? ' critical' : '');
+            popup.textContent = (isCritical ? 'CRIT! ' : '') + damage;
+
+            const targetArea = isEnemy ? document.querySelector('.enemy-area') : document.querySelector('.player-area');
+            targetArea.style.position = 'relative';
+            targetArea.appendChild(popup);
+
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        // 攻撃アニメーション
+        function playAttackAnimation(isPlayer = true) {
+            const emoji = isPlayer ? document.getElementById('playerEmoji') : document.getElementById('enemyEmoji');
+            emoji.style.animation = 'attack-rush 0.5s';
+            setTimeout(() => emoji.style.animation = '', 500);
+        }
+
+        // ブルパルスアニメーション
+        function playBlurPulse(isEnemy = true) {
+            const emoji = isEnemy ? document.getElementById('enemyEmoji') : document.getElementById('playerEmoji');
+            emoji.style.animation = 'blur-pulse 0.3s';
+            setTimeout(() => emoji.style.animation = '', 300);
+        }
+
+        // フラッシュエフェクト
+        function playFlash() {
+            const overlay = document.getElementById('flashOverlay');
+            overlay.style.animation = 'flash-white 0.5s';
+            setTimeout(() => overlay.style.animation = '', 500);
+        }
+
+        // 通常攻撃
+        function playerAttack() {
+            playAttackAnimation(true);
+            setTimeout(() => {
+                const { damage, isCritical } = calculateDamage(playerStats, enemyStats, 1.0);
+                enemyStats.currentHp -= damage;
+
+                playBlurPulse(true);
+                showDamagePopup(damage, isCritical, true);
+                addLog(`${selectedCharacter.name}の攻撃！ ${damage}ダメージ！`);
+
+                ultimateGauge = Math.min(100, ultimateGauge + 20);
+
+                updateBattleUI();
+                checkBattleEnd();
+            }, 300);
+        }
+
+        // スキルメニュー開く
+        function openSkillMenu() {
+            const menu = document.getElementById('skillMenu');
+            const options = document.getElementById('skillOptions');
+            options.innerHTML = '';
+
+            selectedCharacter.skills.forEach(skill => {
+                const canUse = playerStats.currentMp >= skill.mp_cost;
+                const option = document.createElement('div');
+                option.className = 'skill-option' + (canUse ? '' : ' disabled');
+                option.innerHTML = `
+                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-desc">${skill.description}</div>
+                    <div class="skill-cost">消費MP: ${skill.mp_cost}</div>
+                `;
+                if (canUse) {
+                    option.onclick = () => useSkill(skill);
+                }
+                options.appendChild(option);
+            });
+
+            menu.classList.add('active');
+        }
+
+        // スキルメニュー閉じる
+        function closeSkillMenu() {
+            document.getElementById('skillMenu').classList.remove('active');
+        }
+
+        // スキル使用
+        function useSkill(skill) {
+            closeSkillMenu();
+
+            if (playerStats.currentMp < skill.mp_cost) return;
+            playerStats.currentMp -= skill.mp_cost;
+
+            if (skill.effect === 'defense_buff') {
+                playerDefenseBuff = true;
+                addLog(`${selectedCharacter.name}は${skill.name}を使った！次のダメージが半減する！`);
+                updateBattleUI();
+                setTimeout(() => enemyTurn(), 1000);
+                return;
+            }
+
+            playAttackAnimation(true);
+            setTimeout(() => {
+                const ignoreDefense = false;
+
+                if (skill.effect === 'multi_hit') {
+                    let totalDamage = 0;
+                    for (let i = 0; i < skill.hit_count; i++) {
+                        setTimeout(() => {
+                            const { damage } = calculateDamage(playerStats, enemyStats, skill.damage_multiplier, ignoreDefense);
+                            totalDamage += damage;
+                            enemyStats.currentHp -= damage;
+                            playBlurPulse(true);
+                            showDamagePopup(damage, false, true);
+                            updateBattleUI();
+
+                            if (i === skill.hit_count - 1) {
+                                addLog(`${selectedCharacter.name}の${skill.name}！ ${skill.hit_count}連撃で合計${totalDamage}ダメージ！`);
+                                ultimateGauge = Math.min(100, ultimateGauge + 15);
+                                checkBattleEnd();
+                            }
+                        }, i * 200);
+                    }
+                } else {
+                    const { damage, isCritical } = calculateDamage(playerStats, enemyStats, skill.damage_multiplier, ignoreDefense);
+                    enemyStats.currentHp -= damage;
+
+                    playBlurPulse(true);
+                    showDamagePopup(damage, isCritical, true);
+                    addLog(`${selectedCharacter.name}の${skill.name}！ ${damage}ダメージ！`);
+
+                    if (skill.effect === 'burn') {
+                        enemyBurnTurns = 3;
+                        addLog(`敵は炎に包まれた！`);
+                    }
+
+                    ultimateGauge = Math.min(100, ultimateGauge + 15);
+                    updateBattleUI();
+                    checkBattleEnd();
+                }
+            }, 300);
+        }
+
+        // 必殺技
+        function useUltimate() {
+            if (ultimateGauge < 100 || playerStats.currentMp < selectedCharacter.ultimate.mp_cost) {
+                addLog('必殺技ゲージが足りない、またはMPが不足しています！');
+                return;
+            }
+
+            playerStats.currentMp -= selectedCharacter.ultimate.mp_cost;
+            ultimateGauge = 0;
+
+            playFlash();
+            setTimeout(() => {
+                const ultimate = selectedCharacter.ultimate;
+                const ignoreDefense = ultimate.effect === 'ignore_def';
+
+                if (ultimate.effect === 'multi_hit' || ultimate.hit_count) {
+                    let totalDamage = 0;
+                    for (let i = 0; i < ultimate.hit_count; i++) {
+                        setTimeout(() => {
+                            const { damage } = calculateDamage(playerStats, enemyStats, ultimate.damage_multiplier, ignoreDefense);
+                            totalDamage += damage;
+                            enemyStats.currentHp -= damage;
+                            playBlurPulse(true);
+                            showDamagePopup(damage, true, true);
+                            updateBattleUI();
+
+                            if (i === ultimate.hit_count - 1) {
+                                addLog(`${selectedCharacter.name}の${ultimate.name}！ 合計${totalDamage}ダメージ！`);
+                                checkBattleEnd();
+                            }
+                        }, i * 300);
+                    }
+                } else {
+                    const { damage } = calculateDamage(playerStats, enemyStats, ultimate.damage_multiplier, ignoreDefense);
+                    enemyStats.currentHp -= damage;
+
+                    playBlurPulse(true);
+                    showDamagePopup(damage, true, true);
+                    addLog(`${selectedCharacter.name}の${ultimate.name}！ ${damage}ダメージ！`);
+
+                    updateBattleUI();
+                    checkBattleEnd();
+                }
+            }, 500);
+        }
+
+        // アイテムメニュー開く
+        function openItemMenu() {
+            const menu = document.getElementById('itemMenu');
+            const options = document.getElementById('itemOptions');
+            options.innerHTML = '';
+
+            gameData.items.forEach(item => {
+                const count = playerInventory[item.id] || 0;
+                const option = document.createElement('div');
+                option.className = 'skill-option' + (count > 0 ? '' : ' disabled');
+                option.innerHTML = `
+                    <div class="skill-name">${item.emoji} ${item.name} (${count}個)</div>
+                    <div class="skill-desc">${item.description}</div>
+                `;
+                if (count > 0) {
+                    option.onclick = () => useItem(item);
+                }
+                options.appendChild(option);
+            });
+
+            menu.classList.add('active');
+        }
+
+        // アイテムメニュー閉じる
+        function closeItemMenu() {
+            document.getElementById('itemMenu').classList.remove('active');
+        }
+
+        // アイテム使用
+        function useItem(item) {
+            closeItemMenu();
+
+            if (!playerInventory[item.id] || playerInventory[item.id] <= 0) return;
+
+            playerInventory[item.id]--;
+
+            if (item.effect === 'restore_hp') {
+                playerStats.currentHp = Math.min(playerStats.hp, playerStats.currentHp + item.value);
+                addLog(`${item.name}を使った！ HPが${item.value}回復した！`);
+            } else if (item.effect === 'restore_mp') {
+                playerStats.currentMp = Math.min(playerStats.mp, playerStats.currentMp + item.value);
+                addLog(`${item.name}を使った！ MPが${item.value}回復した！`);
+            } else if (item.effect === 'restore_all') {
+                playerStats.currentHp = playerStats.hp;
+                playerStats.currentMp = playerStats.mp;
+                addLog(`${item.name}を使った！ HP・MPが全回復した！`);
+            }
+
+            updateBattleUI();
+            setTimeout(() => enemyTurn(), 1000);
+        }
+
+        // 撤退
+        function retreat() {
+            addLog('戦闘から逃げ出した！');
+            setTimeout(() => returnToTitle(), 1000);
+        }
+
+        // 敵のターン
+        function enemyTurn() {
+            if (enemyStats.currentHp <= 0) return;
+
+            setTimeout(() => {
+                // 火傷ダメージ
+                if (enemyBurnTurns > 0) {
+                    const burnDamage = Math.floor(enemyStats.hp * 0.1);
+                    enemyStats.currentHp -= burnDamage;
+                    showDamagePopup(burnDamage, false, true);
+                    addLog(`敵は炎のダメージを受けた！ ${burnDamage}ダメージ！`);
+                    enemyBurnTurns--;
+                    updateBattleUI();
+
+                    if (enemyStats.currentHp <= 0) {
+                        checkBattleEnd(false);
+                        return;
+                    }
+                }
+
+                // 敵のAI判断
+                let action = 'attack'; // デフォルトは通常攻撃
+                let selectedSkill = null;
+
+                const hpPercent = (enemyStats.currentHp / enemyStats.hp) * 100;
+
+                // heal_priority: HPが低い場合は回復
+                if (currentEnemy.ai_type === 'heal_priority' && currentEnemy.heal_skill) {
+                    if (hpPercent <= currentEnemy.heal_skill.trigger_hp_percent &&
+                        enemyStats.currentMp >= currentEnemy.heal_skill.mp_cost) {
+                        action = 'heal';
+                    }
+                }
+
+                // 回復以外の場合、攻撃方法を決定
+                if (action !== 'heal') {
+                    if (currentEnemy.ai_type === 'strong_attack') {
+                        // スキル優先
+                        if (currentEnemy.skills && currentEnemy.skills.length > 0) {
+                            const skill = currentEnemy.skills[0];
+                            if (enemyStats.currentMp >= skill.mp_cost) {
+                                action = 'skill';
+                                selectedSkill = skill;
+                            }
+                        }
+                    } else if (currentEnemy.ai_type === 'random') {
+                        // ランダムで攻撃かスキル
+                        if (currentEnemy.skills && currentEnemy.skills.length > 0 && Math.random() < 0.5) {
+                            const skill = currentEnemy.skills[0];
+                            if (enemyStats.currentMp >= skill.mp_cost) {
+                                action = 'skill';
+                                selectedSkill = skill;
+                            }
+                        }
+                    }
+                }
+
+                // アクション実行
+                if (action === 'heal') {
+                    // 回復
+                    const healSkill = currentEnemy.heal_skill;
+                    enemyStats.currentMp -= healSkill.mp_cost;
+                    enemyStats.currentHp = Math.min(enemyStats.hp, enemyStats.currentHp + healSkill.heal_amount);
+
+                    addLog(`${currentEnemy.name}は${healSkill.name}を使った！ HPが${healSkill.heal_amount}回復した！`);
+                    updateBattleUI();
+                } else if (action === 'skill' && selectedSkill) {
+                    // スキル攻撃
+                    enemyStats.currentMp -= selectedSkill.mp_cost;
+                    playAttackAnimation(false);
+                    setTimeout(() => {
+                        let { damage, isCritical } = calculateDamage(enemyStats, playerStats, selectedSkill.damage_multiplier);
+
+                        if (playerDefenseBuff) {
+                            damage = Math.floor(damage * 0.5);
+                            playerDefenseBuff = false;
+                            addLog(`防御効果でダメージが半減した！`);
+                        }
+
+                        playerStats.currentHp -= damage;
+
+                        playBlurPulse(false);
+                        showDamagePopup(damage, isCritical, false);
+                        addLog(`${currentEnemy.name}の${selectedSkill.name}！ ${damage}ダメージを受けた！`);
+
+                        updateBattleUI();
+                        checkBattleEnd(false);
+                    }, 300);
+                } else {
+                    // 通常攻撃
+                    playAttackAnimation(false);
+                    setTimeout(() => {
+                        let { damage, isCritical } = calculateDamage(enemyStats, playerStats, 1.0);
+
+                        if (playerDefenseBuff) {
+                            damage = Math.floor(damage * 0.5);
+                            playerDefenseBuff = false;
+                            addLog(`防御効果でダメージが半減した！`);
+                        }
+
+                        playerStats.currentHp -= damage;
+
+                        playBlurPulse(false);
+                        showDamagePopup(damage, isCritical, false);
+                        addLog(`${currentEnemy.name}の攻撃！ ${damage}ダメージを受けた！`);
+
+                        updateBattleUI();
+                        checkBattleEnd(false);
+                    }, 300);
+                }
+            }, 1000);
+        }
+
+        // 戦闘終了チェック
+        function checkBattleEnd(isPlayerTurn = true) {
+            if (enemyStats.currentHp <= 0) {
+                setTimeout(() => showVictory(), 500);
+            } else if (playerStats.currentHp <= 0) {
+                setTimeout(() => showDefeat(), 500);
+            } else if (isPlayerTurn) {
+                // プレイヤーのターン後にのみ敵のターンを呼び出す
+                setTimeout(() => enemyTurn(), 1500);
+            }
+        }
+
+        // 勝利
+        function showVictory() {
+            // 経験値とゴールド獲得
+            playerExp += currentEnemy.exp_reward;
+            playerGold += currentEnemy.gold_reward;
+
+            // 敵を倒したことを記録
+            if (!clearedEnemies.includes(currentEnemyIndex)) {
+                clearedEnemies.push(currentEnemyIndex);
+            }
+
+            // レベルアップチェック
+            let leveledUp = false;
+            let newLevel = playerLevel;
+
+            for (let i = 0; i < gameData.level_progression.exp_table.length; i++) {
+                const levelData = gameData.level_progression.exp_table[i];
+                if (playerExp >= levelData.required_exp && levelData.level > playerLevel) {
+                    newLevel = levelData.level;
+                    leveledUp = true;
+                }
+            }
+
+            if (leveledUp) {
+                playerLevel = newLevel;
+                // レベルアップ時にステータスを更新
+                updatePlayerStatsForLevel();
+            }
+
+            // 最終ボス撃破時はエンディングへ
+            if (currentEnemy.is_final_boss) {
+                showEnding();
+                return;
+            }
+
+            // 勝利画面表示
+            document.getElementById('resultTitle').textContent = '勝利！';
+            document.getElementById('resultTitle').className = 'result-title victory';
+
+            let resultHTML = `
+                <div style="margin-bottom: 10px;">経験値: +${currentEnemy.exp_reward} (合計: ${playerExp})</div>
+                <div style="margin-bottom: 10px;">ゴールド: +${currentEnemy.gold_reward} (合計: ${playerGold})</div>
+            `;
+
+            if (leveledUp) {
+                resultHTML += `
+                    <div style="color: #ffd700; font-size: 1.5rem; margin-top: 20px; animation: glow-pulse 1s infinite;">
+                        🎉 レベルアップ！ Lv.${playerLevel} 🎉
+                    </div>
+                `;
+            }
+
+            document.getElementById('resultInfo').innerHTML = resultHTML;
+
+            // ボタンを更新
+            const resultButtons = document.querySelector('.result-buttons');
+            resultButtons.innerHTML = `
+                <button class="glass-button" onclick="returnToTitle()">タイトルへ</button>
+                <button class="glass-button" onclick="returnToMap()">マップへ</button>
+            `;
+
+            switchScreen('resultScreen');
+        }
+
+        // マップに戻る
+        function returnToMap() {
+            saveGame(); // 自動セーブ
+            updateMapScreen();
+            switchScreen('mapScreen');
+        }
+
+        // レベルアップ時のステータス更新
+        function updatePlayerStatsForLevel() {
+            const levelBonus = playerLevel - 1;
+            const growth = gameData.level_progression.stat_growth_per_level;
+
+            playerStats.hp = selectedCharacter.base_stats.hp + (growth.hp * levelBonus);
+            playerStats.mp = selectedCharacter.base_stats.mp + (growth.mp * levelBonus);
+            playerStats.atk = selectedCharacter.base_stats.atk + (growth.atk * levelBonus);
+            playerStats.def = selectedCharacter.base_stats.def + (growth.def * levelBonus);
+            playerStats.spd = selectedCharacter.base_stats.spd + (growth.spd * levelBonus);
+
+            // HP/MPも回復
+            playerStats.currentHp = playerStats.hp;
+            playerStats.currentMp = playerStats.mp;
+        }
+
+        // 敗北
+        function showDefeat() {
+            document.getElementById('resultTitle').textContent = '敗北...';
+            document.getElementById('resultTitle').className = 'result-title defeat';
+            document.getElementById('resultInfo').innerHTML = `
+                <div>もう一度挑戦しますか？</div>
+            `;
+
+            // ボタンを更新
+            const resultButtons = document.querySelector('.result-buttons');
+            resultButtons.innerHTML = `
+                <button class="glass-button" onclick="returnToTitle()">タイトルへ</button>
+                <button class="glass-button" onclick="retryBattle()">もう一度</button>
+            `;
+
+            switchScreen('resultScreen');
+        }
+
+        // 再戦
+        function retryBattle() {
+            // 同じ敵と再戦（currentEnemyIndexはそのまま）
+            startBattle(false);
+        }
+
+        // タイトルに戻る
+        function returnToTitle() {
+            saveGame(); // セーブしてから戻る
+            checkSaveData(); // ボタンを更新
+            switchScreen('titleScreen');
+        }
+
+
+        // エンディング画面
+        function showEnding() {
+            // エンディング画面のテンプレートリテラルを評価
+            const endingScreen = document.getElementById('endingScreen');
+            const endingInfo = endingScreen.querySelector('.result-info');
+            endingInfo.innerHTML = `
+                <div style="margin-bottom: 20px;">👑 王冠を取り戻した！ 👑</div>
+                <div style="margin-bottom: 20px;">アルガレイアに平和が戻った。</div>
+                <div style="margin-top: 30px; color: #c8b8ff;">
+                    <div>最終レベル: Lv.${playerLevel}</div>
+                    <div>獲得ゴールド: ${playerGold}</div>
+                </div>
+            `;
+            switchScreen('endingScreen');
+        }
+
+        // 初期化実行
+        init();
+    </script>
+</body>
+</html>
