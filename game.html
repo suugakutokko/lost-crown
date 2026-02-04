@@ -778,8 +778,7 @@
         <h2 class="result-title" id="resultTitle">勝利！</h2>
         <div class="result-info" id="resultInfo"></div>
         <div class="result-buttons">
-            <button class="glass-button" onclick="returnToTitle()">タイトルへ</button>
-            <button class="glass-button" onclick="playAgain()">もう一度</button>
+            <!-- ボタンはJavaScriptで動的に生成される -->
         </div>
     </div>
 
@@ -1180,8 +1179,8 @@
         function goToMap() {
             if (!selectedCharacter) return;
 
-            // 初回のみ初期化
-            if (playerLevel === 1 && playerExp === 0 && playerGold === 0) {
+            // 初回のみ初期化（playerStatsが未定義の場合も初期化）
+            if (!playerStats || (playerLevel === 1 && playerExp === 0 && playerGold === 0 && clearedEnemies.length === 0)) {
                 playerLevel = 1;
                 playerExp = 0;
                 playerGold = 0;
@@ -1335,6 +1334,20 @@
                 currentEnemyIndex = 0;
 
                 // プレイヤー初期化（レベルに応じてステータス強化）
+                const levelBonus = playerLevel - 1;
+                playerStats = {
+                    hp: selectedCharacter.base_stats.hp + (gameData.level_progression.stat_growth_per_level.hp * levelBonus),
+                    mp: selectedCharacter.base_stats.mp + (gameData.level_progression.stat_growth_per_level.mp * levelBonus),
+                    atk: selectedCharacter.base_stats.atk + (gameData.level_progression.stat_growth_per_level.atk * levelBonus),
+                    def: selectedCharacter.base_stats.def + (gameData.level_progression.stat_growth_per_level.def * levelBonus),
+                    spd: selectedCharacter.base_stats.spd + (gameData.level_progression.stat_growth_per_level.spd * levelBonus)
+                };
+                playerStats.currentHp = playerStats.hp;
+                playerStats.currentMp = playerStats.mp;
+            }
+
+            // playerStatsが未定義の場合は初期化（安全対策）
+            if (!playerStats) {
                 const levelBonus = playerLevel - 1;
                 playerStats = {
                     hp: selectedCharacter.base_stats.hp + (gameData.level_progression.stat_growth_per_level.hp * levelBonus),
@@ -1517,7 +1530,7 @@
                 playerDefenseBuff = true;
                 addLog(`${selectedCharacter.name}は${skill.name}を使った！次のダメージが半減する！`);
                 updateBattleUI();
-                setTimeout(() => enemyTurn(), 1000);
+                setTimeout(() => checkBattleEnd(true), 1000);
                 return;
             }
 
@@ -1658,7 +1671,7 @@
             }
 
             updateBattleUI();
-            setTimeout(() => enemyTurn(), 1000);
+            setTimeout(() => checkBattleEnd(true), 1000);
         }
 
         // 撤退
