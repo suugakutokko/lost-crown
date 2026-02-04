@@ -282,6 +282,33 @@
             font-weight: bold;
         }
 
+        .ultimate-bar-container {
+            width: 100%;
+            max-width: 300px;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            margin-top: 5px;
+        }
+
+        .ultimate-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff8800);
+            transition: width 0.5s;
+            box-shadow: 0 0 10px #ffd700;
+        }
+
+        .ultimate-bar.ready {
+            animation: ultimate-pulse 1s infinite;
+        }
+
+        @keyframes ultimate-pulse {
+            0%, 100% { box-shadow: 0 0 10px #ffd700; }
+            50% { box-shadow: 0 0 20px #ffd700, 0 0 30px #ff8800; }
+        }
+
         .battle-log {
             background: rgba(0, 0, 0, 0.6);
             padding: 15px;
@@ -747,6 +774,9 @@
                 <div class="mp-bar" id="playerMpBar">
                     <span id="playerMpText">50/50</span>
                 </div>
+            </div>
+            <div class="ultimate-bar-container">
+                <div class="ultimate-bar" id="ultimateBar"></div>
             </div>
         </div>
 
@@ -1407,6 +1437,15 @@
             document.getElementById('playerMpBar').style.width = playerMpPercent + '%';
             document.getElementById('playerMpText').textContent = `${playerStats.currentMp}/${playerStats.mp}`;
 
+            // 必殺技ゲージ
+            const ultimateBar = document.getElementById('ultimateBar');
+            ultimateBar.style.width = ultimateGauge + '%';
+            if (ultimateGauge >= 100) {
+                ultimateBar.classList.add('ready');
+            } else {
+                ultimateBar.classList.remove('ready');
+            }
+
             // 敵HP
             const enemyHpPercent = (enemyStats.currentHp / enemyStats.hp) * 100;
             document.getElementById('enemyHpBar').style.width = enemyHpPercent + '%';
@@ -1717,21 +1756,21 @@
                 // 回復以外の場合、攻撃方法を決定
                 if (action !== 'heal') {
                     if (currentEnemy.ai_type === 'strong_attack') {
-                        // スキル優先
+                        // スキル優先（複数ある場合はランダム）
                         if (currentEnemy.skills && currentEnemy.skills.length > 0) {
-                            const skill = currentEnemy.skills[0];
-                            if (enemyStats.currentMp >= skill.mp_cost) {
+                            const availableSkills = currentEnemy.skills.filter(s => enemyStats.currentMp >= s.mp_cost);
+                            if (availableSkills.length > 0) {
+                                selectedSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
                                 action = 'skill';
-                                selectedSkill = skill;
                             }
                         }
-                    } else if (currentEnemy.ai_type === 'random') {
-                        // ランダムで攻撃かスキル
+                    } else if (currentEnemy.ai_type === 'random' || currentEnemy.ai_type === 'heal_priority') {
+                        // ランダムで攻撃かスキル（heal_priorityも回復しない場合はランダム）
                         if (currentEnemy.skills && currentEnemy.skills.length > 0 && Math.random() < 0.5) {
-                            const skill = currentEnemy.skills[0];
-                            if (enemyStats.currentMp >= skill.mp_cost) {
+                            const availableSkills = currentEnemy.skills.filter(s => enemyStats.currentMp >= s.mp_cost);
+                            if (availableSkills.length > 0) {
+                                selectedSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
                                 action = 'skill';
-                                selectedSkill = skill;
                             }
                         }
                     }
@@ -1739,13 +1778,14 @@
 
                 // アクション実行
                 if (action === 'heal') {
-                    // 回復
+                    // 回復（ターンは終了するが戦闘は継続）
                     const healSkill = currentEnemy.heal_skill;
                     enemyStats.currentMp -= healSkill.mp_cost;
                     enemyStats.currentHp = Math.min(enemyStats.hp, enemyStats.currentHp + healSkill.heal_amount);
 
                     addLog(`${currentEnemy.name}は${healSkill.name}を使った！ HPが${healSkill.heal_amount}回復した！`);
                     updateBattleUI();
+                    // 回復後はターン終了（次はプレイヤーのターン）
                 } else if (action === 'skill' && selectedSkill) {
                     // スキル攻撃
                     enemyStats.currentMp -= selectedSkill.mp_cost;
